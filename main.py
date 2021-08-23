@@ -20,9 +20,9 @@ changeDict = dict()
 
 # Root URL
 @app.route('/', methods=['GET','POST'])
-def index():
-
-    getNEM() #could do 4 to do the full day lookback?
+@app.route('/<int:lookback>', methods=['GET','POST'])
+def index(lookback=1):
+    getNEM(lookback) #could do 4 to do the full day lookback?
     if request.method == 'POST':
         if request.form.get('action_dl')=='Download':
             return redirect('/mtpasa/download')
@@ -37,7 +37,7 @@ def index():
 
 # mtpasa with lookback
 @app.route("/mtpasa/")
-@app.route("/mtpasa/<lookback>")
+@app.route("/mtpasa/<int:lookback>")
 def getNEM(lookback=1):
   global message
   global changeDict
@@ -92,9 +92,6 @@ def getNEM(lookback=1):
   if len(df.index) == 0:
       message = "No changes"
       return message
-      # return redirect(url_for('.index'))
-  
-  ##!!! WEB APP BREAKS SOMEWHERE IN HERE! !!!
 
   # handle messaging
   df_first = df.groupby('DUID').first()[['PASADELTA']] # look for the first entry for each
@@ -111,12 +108,17 @@ def getNEM(lookback=1):
   changeDict = df_first[:5].to_dict()['PASADELTA']
 
   dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
-  savepath = os.path.join(app.config['UPLOAD_FOLDER'],fname)
+  # savepath = os.path.join(app.config['UPLOAD_FOLDER'],fname)
   # how do I use flask for safe saving
-  # dfx.to_csv(savepath)
+  # dfx.to_csv()
+
+  # SERVER CSV AS DOWNLOAD
+  # resp = make_response(dfx.to_csv())
+  # resp.headers["Content-Disposition"] = "attachment; filename=export.csv"
+  # resp.headers["Content-Type"] = "text/csv"
+  # return resp
 
   return message
-  # return redirect(url_for('.index'))
 
 
 @app.route('/mtpasa/download', methods=['GET', 'POST'])
