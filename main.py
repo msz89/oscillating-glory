@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 import requests
-from flask import Flask, render_template, url_for, redirect, make_response, send_from_directory, request
+from flask import Flask, Markup, render_template, url_for, redirect, make_response, send_from_directory, request
 from bs4 import BeautifulSoup
 
 app = Flask(__name__, template_folder="templates")
@@ -16,11 +16,12 @@ app.config['UPLOAD_FOLDER'] =  UPLOAD_FOLDER
 fname = "MT PASA Changes - crosstab.csv"
 app.config['DL_FNAME'] = fname
 message = "Click to load Pasa data"
+changeDict = dict()
 
 # Root URL
 @app.route('/', methods=['GET','POST'])
 def index():
-    global message
+
     getNEM() #could do 4 to do the full day lookback?
     if request.method == 'POST':
         if request.form.get('action_dl')=='Download':
@@ -28,24 +29,19 @@ def index():
      # Set The upload HTML template '\templates\index.html'
     return render_template(
       'index.html',
-      message = message
+      # status = status
+      message = message,
+      changeDict = changeDict
       )
 
-# api style response
-@app.route("/api/")
-def users():
-    snot = {'Content-Type': 'application/json'}
-    return make_response(
-        # 'Test worked!',
-        200,
-        snot
-    )
 
 # mtpasa with lookback
 @app.route("/mtpasa/")
 @app.route("/mtpasa/<lookback>")
 def getNEM(lookback=1):
   global message
+  global changeDict
+
   base_url = 'https://nemweb.com.au'
   nem_url = 'https://nemweb.com.au/Reports/Current/MTPASA_DUIDAvailability/'
   datelimit = '2025/12/31' #user adjustable
@@ -103,21 +99,24 @@ def getNEM(lookback=1):
   # handle messaging
   df_first = df.groupby('DUID').first()[['PASADELTA']] # look for the first entry for each
   plantChangeList = list(df.DUID.unique())
-  message = """When comparing the MT PASA submitted on {} with {} <br>
-  There were {} plants that updated their availability <br> - {} <br>
-  The plants are listed below with the first change they made (Details in the attached files) <br>
-   """.format(firstdate, seconddate, len(plantChangeList), "<br> - ".join(plantChangeList))
+  message = Markup(
+      """There are changes. <br>
+      When comparing the MT PASA submitted on {} with {}, <br>
+      There were {} plants that updated their availability.<br>
+      The plants are listed below with the first change they made (Details in the attached files).
+      """.format(firstdate, seconddate, len(plantChangeList))
+   )
   
-  # What can we do with this table? 
-  #(df_first[:5])
+  # pass a dictionary of changes to the index page for sorting
+  changeDict = df_first[:5].to_dict()['PASADELTA']
 
   dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
   savepath = os.path.join(app.config['UPLOAD_FOLDER'],fname)
-  dfx.to_csv(savepath)
+  # how do I use flask for safe saving
+  # dfx.to_csv(savepath)
 
   return message
   # return redirect(url_for('.index'))
-
 
 
 @app.route('/mtpasa/download', methods=['GET', 'POST'])

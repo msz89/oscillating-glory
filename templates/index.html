@@ -9,16 +9,22 @@
     <p><b>Projection of system availability Time Analysis</b> <br></p>
     <ul>
     <li>PASATA retrieves data files from <a href='http://nemweb.com.au/Reports/Current/MTPASA_DUIDAvailability/'>NEMweb</a> for the Medium Term PASA by generator plant DUID. </li>
-	<li>It compares the latest file with the file from the previous period and summarises the changes (PASA-Delta)</li>
+	<li>It compares the latest file with the file from the previous period and summarises the changes (PASA-Delta). Postive numbers are an increase in available MW and negative a decrease in available MW</li>
 	<li>The first change for each generator plant is listed below, or if there are no changes, 'No changes' is the status</li>
 	<li>A csv containing the dates and changes can be downloaded using the button</li>
 	<li>By using the endpoint '/mtpasa/[x]' the PASA-Delta can look back 'x' periods. Note that MT PASA is published at 9AM, 12PM, 3PM, 6PM. This should be considered when setting the lookback period.
     </ul>
-    <p>Status: {{message}} </p>
+    <p><b>Status:</b> {{message}} </p>
+    <p>
+      {% for key in changeDict: %}
+      <tr>
+      <td>{{key}}:</td>
+      <td>{{changeDict[key]}}</td> <br>
+      </tr>
+      {% endfor %}
+    </p>
     <form method="post" action="/">
     	<p><input type="submit" value="Download" name="action_dl"></p>
     </form>
   </body>
 </html>
-
-<!-- <a href="{{ url_for('download', filename="downloadFile.txt") }}">File</a> -->
