@@ -26,7 +26,7 @@ def index(lookback=1):
     # fetches the formed response from get nem pasa
     resp = get_nem_pasa(lookback)
 
-    # button logic
+    # button logic - updated variables dont seem to get into this!
     if request.method == 'POST':
         if request.form.get('action_dl')=='Download':
             return resp
@@ -38,7 +38,6 @@ def index(lookback=1):
         message = message,
         changeDict = change_dict
         )
-
 
 # MTPASA with lookback
 @app.route("/mtpasa/")
@@ -96,7 +95,12 @@ def get_nem_pasa(lookback=1):
   
     # If no changes return a shorter message and exit function
     if len(df.index) == 0:
-        message = "No changes"
+        message = Markup(
+        """No changes. <br>
+        When comparing the MT PASA submitted on {} with {}, <br>
+        """.format(first_date, second_date)
+        )
+        change_dict = ""
         return message
   
     # Set up df views and handle dynamic data, message and change_dict
