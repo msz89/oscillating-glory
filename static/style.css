@@ -16,5 +16,21 @@
 
 body {
   font-family: "helvetica", sans-serif;
-  text-align: center;
+  text-align: left;
+}
+
+
+
+.column {
+	float: left;
+	padding: 10px;
+}
+
+.left, .right {
+	width: 20%;
+	padding: 50px;
+}
+
+.middle {
+	width: 60%;
 }
