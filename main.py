@@ -15,28 +15,30 @@ app.config['UPLOAD_FOLDER'] =  UPLOAD_FOLDER
 
 fname = "MT PASA Changes - crosstab.csv"
 app.config['DL_FNAME'] = fname
-
-message = "Click to load Pasa data"
-change_dict = dict()
+app.config['MESSAGE'] = ""
+app.config['CHANGES'] = dict()
+app.config['LOOKBACK'] = 1
 
 # Root URL
 @app.route('/', methods=['GET','POST'])
 @app.route('/<int:lookback>', methods=['GET','POST'])
 def index(lookback=1):
     # fetches the formed response from get nem pasa
-    resp = get_nem_pasa(lookback)
+    app.config['LOOKBACK'] = lookback
+    resp = get_nem_pasa(app.config['LOOKBACK'])
 
     # button logic - updated variables dont seem to get into this!
     if request.method == 'POST':
         if request.form.get('action_dl')=='Download':
-            return resp
+            # return resp
+            return get_nem_pasa(app.config['LOOKBACK'])
 
-    # render main page and pass dynamic data through        
+    # render main page and pass dynamic data through
     return render_template(
         'index.html',
         # status = status
-        message = message,
-        changeDict = change_dict
+        message = app.config['MESSAGE'],
+        changeDict = app.config['CHANGES']
         )
 
 # MTPASA with lookback
@@ -44,9 +46,6 @@ def index(lookback=1):
 @app.route("/mtpasa/<int:lookback>")
 def get_nem_pasa(lookback=1):
     # function could return (True/False, message, dict)
-
-    global message
-    global change_dict
 
     # Set URL inputs
     base_url = 'https://nemweb.com.au'
@@ -96,18 +95,18 @@ def get_nem_pasa(lookback=1):
   
     # If no changes return a shorter message and exit function
     if len(df.index) == 0:
-        message = Markup(
+        app.config['MESSAGE'] = Markup(
         """No changes. <br>
         When comparing the MT PASA submitted on {} with {}, <br>
         """.format(first_date, second_date)
         )
-        change_dict = ""
-        return message
+        app.config['CHANGES'] = ""
+        return app.config['MESSAGE']
   
-    # Set up df views and handle dynamic data, message and change_dict
+    # Set up df views and handle dynamic data, message and changes
     df_first = df.groupby('DUID').first()[['PASADELTA']] # look for the first entry for each
     plant_change_list = list(df.DUID.unique())
-    message = Markup(
+    app.config['MESSAGE'] = Markup(
         """Availability has changed. <br>
         When comparing the MT PASA submitted on {} with {}, <br>
         There were {} plants that updated their availability.<br>
@@ -115,7 +114,7 @@ def get_nem_pasa(lookback=1):
         """.format(first_date, second_date, len(plant_change_list))
         )
 
-    change_dict = df_first[:10].to_dict()['PASADELTA'] # pass a dictionary of changes to the index page for sorting
+    app.config['CHANGES'] = df_first[:10].to_dict()['PASADELTA'] # pass a dictionary of changes to the index page for sorting
 
     dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
 
