@@ -9,14 +9,14 @@
   <div class="column"></div>
   <div class="column">
 
-    <h1>PASATA</h1>
-    <p><b>Projection of system availability Time Analysis</b> <br></p>
+    <h1>PASA-Delta</h1>
+    <p><b>Projection of system availability Difference</b> <br></p>
     <ul>
-    <li>PASATA retrieves data files from <a href='http://nemweb.com.au/Reports/Current/MTPASA_DUIDAvailability/'>NEMweb</a> for the Medium Term PASA by generator plant DUID. </li>
+    <li>PASA-Delta retrieves data files from <a href='http://nemweb.com.au/Reports/Current/MTPASA_DUIDAvailability/'>NEMweb</a> for the Medium Term PASA by generator plant DUID. </li>
 	<li>It compares the latest file with the file from the previous period and summarises the changes (PASA-Delta). Postive numbers are an increase in available MW and negative a decrease in available MW</li>
-	<li>The first change for each generator plant is listed below, or if there are no changes, 'No changes' is the status</li>
-	<li>A csv containing the dates and changes can be downloaded using the button</li>
-	<li>By using the endpoint '/mtpasa/[x]' the PASA-Delta can look back 'x' periods. Note that MT PASA is published at 9AM, 12PM, 3PM, 6PM. This should be considered when setting the lookback period.
+	<li>The first change for each generator plant (max 10) is listed below, or if there are no changes, 'No changes' is the status</li>
+	<li>A csv containing the dates and changes can be downloaded using the download button</li>
+	<li>By using the endpoint '/[x]', PASA-Delta can look back 'x' periods. Note that MT PASA is published at 9AM, 12PM, 3PM, 6PM on Mon-Sat. No PASA is published on Sun. This should be considered when setting the lookback period.
     </ul>
     <p><b>Status:</b> {{message}} </p>
     <p>

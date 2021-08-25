@@ -43,6 +43,7 @@ def index(lookback=1):
 @app.route("/mtpasa/")
 @app.route("/mtpasa/<int:lookback>")
 def get_nem_pasa(lookback=1):
+    # function could return (True/False, message, dict)
 
     global message
     global change_dict
@@ -85,10 +86,10 @@ def get_nem_pasa(lookback=1):
     df.PASAAVAILABILITY = pd.to_numeric(df.PASAAVAILABILITY) # convert to numeric
     df.PASAAVAILABILITY_2 = pd.to_numeric(df.PASAAVAILABILITY_2) # convert to numeric
 
-    # Create pasadelta as first datte minus second date
+    # Create pasadelta as second date minus first date
     # negative numbers are a decrease in availability
     # positive numbers are an increase in availability
-    df['PASADELTA'] = df.PASAAVAILABILITY - df.PASAAVAILABILITY_2 # create pasadelta
+    df['PASADELTA'] = df.PASAAVAILABILITY_2 - df.PASAAVAILABILITY # create pasadelta
     df['ABSPASADELTA'] = abs(df.PASADELTA)
     df = df[df.PASADELTA !=0] # drop rows with no change
     df = df[df.DAY<datelimit] # only take the next year, pivot the table to get columns for DUID, fillna()
