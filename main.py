@@ -17,21 +17,19 @@ fname = "MT PASA Changes - crosstab.csv"
 app.config['DL_FNAME'] = fname
 app.config['MESSAGE'] = ""
 app.config['CHANGES'] = dict()
-app.config['LOOKBACK'] = 1
 
 # Root URL
 @app.route('/', methods=['GET','POST'])
 @app.route('/<int:lookback>', methods=['GET','POST'])
 def index(lookback=1):
     # fetches the formed response from get nem pasa
-    app.config['LOOKBACK'] = lookback
-    resp = get_nem_pasa(app.config['LOOKBACK'])
+    resp = get_nem_pasa(lookback)
 
     # button logic - updated variables dont seem to get into this!
     if request.method == 'POST':
         if request.form.get('action_dl')=='Download':
             # return resp
-            return get_nem_pasa(app.config['LOOKBACK'])
+            return resp
 
     # render main page and pass dynamic data through
     return render_template(
@@ -104,7 +102,7 @@ def get_nem_pasa(lookback=1):
         return app.config['MESSAGE']
   
     # Set up df views and handle dynamic data, message and changes
-    df_first = df.groupby('DUID').first()[['PASADELTA']] # look for the first entry for each
+    df_first = df.groupby('DUID').first().sort_values('ABSPASADELTA',ascending=False)[['PASADELTA']] # look for the first entry for each
     plant_change_list = list(df.DUID.unique())
     app.config['MESSAGE'] = Markup(
         """Availability has changed. <br>
