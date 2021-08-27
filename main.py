@@ -23,21 +23,25 @@ app.config['CHANGES'] = dict()
 @app.route('/<int:lookback>', methods=['GET','POST'])
 def index(lookback=1):
     # fetches the formed response from get nem pasa
+    # period = request.args.get('period') # better way to use params rather than endpoint
+
     resp = get_nem_pasa(lookback)
 
     # button logic - updated variables dont seem to get into this!
     if request.method == 'POST':
-        if request.form.get('action_dl')=='Download':
-            # return resp
-            return resp
+        return resp
+
+        # return resp
 
     # render main page and pass dynamic data through
     return render_template(
         'index.html',
         # status = status
         message = app.config['MESSAGE'],
-        changeDict = app.config['CHANGES']
+        changeDict = app.config['CHANGES'],
+        period = lookback
         )
+
 
 # MTPASA with lookback
 @app.route("/mtpasa/")
@@ -121,15 +125,6 @@ def get_nem_pasa(lookback=1):
     resp.headers["Content-Disposition"] = "attachment; filename=PASADELTA.csv"
     resp.headers["Content-Type"] = "text/csv"
     return resp
-    # return message
-
-# Routing for download
-# @app.route('/mtpasa/download', methods=['GET', 'POST'])
-# def download():
-#     # Appending app path to upload folder path within app root folder
-#     uploads = (app.config['UPLOAD_FOLDER'])
-#     # Returning file from appended path
-#     return send_from_directory(directory=uploads, path=uploads, filename=fname)
 
 if (__name__ == "__main__"):
     app.run(port = 5000)
