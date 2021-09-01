@@ -21,6 +21,7 @@
             <th>Plant DUID</th>
             <th>PASA-Delta</th>
             <th>Day</th>
+            <th>No. Changes</th>
             <th>Region</th>
           </tr>
           {% for key in changeDict: %}
@@ -28,6 +29,7 @@
             <td>{{key}}</td>
             <td>{{changeDict[key]['PASADELTA']}}</td>
             <td>{{changeDict[key]['DAY']}}</td>
+            <td>{{changeCount['PASADELTA'][key]}}</td>
             <td>{{changeDict[key]['REGIONID']}}</td>
           </tr> 
           {% endfor %} 

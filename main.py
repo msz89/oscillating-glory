@@ -17,6 +17,7 @@ fname = "MT PASA Changes - crosstab.csv"
 app.config['DL_FNAME'] = fname
 app.config['MESSAGE'] = ""
 app.config['CHANGES'] = dict()
+app.config['CHANGECOUNT'] = dict()
 app.config['STATUSCOLOUR'] = "lightgrey"
 
 # Root URL
@@ -40,6 +41,7 @@ def index(lookback=1):
         # status = status
         message = app.config['MESSAGE'],
         changeDict = app.config['CHANGES'],
+        changeCount = app.config['CHANGECOUNT'],
         period = lookback,
         statuscolour = app.config['STATUSCOLOUR']
         )
@@ -127,6 +129,9 @@ def get_nem_pasa(lookback=1):
     app.config['CHANGES'] = df_first[:10].to_dict('index')#['PASADELTA'] # pass a dictionary of changes to the index page for sorting
 
     app.config['STATUSCOLOUR'] = "lightgreen"
+
+    app.config['CHANGECOUNT'] = df.groupby('DUID').count()[['PASADELTA']].to_dict() #df_counts
+
 
     dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
 
