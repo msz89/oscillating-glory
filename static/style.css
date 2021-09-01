@@ -14,33 +14,7 @@
  * limitations under the License.
  */
 div {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
 
-table{
-  margin-left: auto;
-  margin-right: auto;
-}
-
-form {
-    display: inline-block;
-}
-
-th {
-  border-bottom: 1px solid black;
-  text-align: right;
-  padding: 5px;
-}
-
-td {
-  text-align: right;
-  padding: 5px;
-}
-
-body {
-  font-family: "helvetica", sans-serif;
-  text-align: left;
 }
 
 h1 {
@@ -53,17 +27,58 @@ h3 {
   text-align: center;
 }
 
+body {
+  font-family: "helvetica", sans-serif;
+  text-align: left;
+}
+
+table{
+  margin-left: auto;
+  margin-right: auto;
+}
+
+th {
+  border-bottom: 1px solid black;
+  text-align: right;
+  padding: 5px;
+  padding-right: 20px;
+  padding-left: 20px;
+}
+
+td {
+  text-align: right;
+  padding: 5px;
+  padding-right: 20px;
+  padding-left: 20px;
+}
+
+form {
+    display: inline-block;
+}
+
+
+.logo {
+  vertical-align: baseline;
+  float:right;
+  padding-bottom: 10px
+}
+
+.status {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
 
 .column {
 	float: left;
-	padding: 10px;
+	padding: 0px;
 }
 
 .left, .right {
-	width: 30%;
-	padding: 100px;
+	width: 20%;
+	padding-left: 0px;
 }
 
 .middle {
 	width: 60%;
+  padding-left: 0px;
 }

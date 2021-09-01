@@ -5,19 +5,18 @@
   <title>MT PASA Comparison</title>
   <link rel="stylesheet" href="static/style.css">
 
-  <body>
-    <div class="row">
-      <div class="column"></div>
-      <div class="column">
+  <body>    
+      <div>
+        <h1>PASA-Delta <img class="logo" src="static/BEN-purple-green.png" style="height:60px;"> </h1>
+      </div>
 
-        <h1>PASA-Delta</h1>
-
-      <div style="background-color: {{statuscolour}}">
+      <div class="status" style="background-color: {{statuscolour}}">
         <h3><b>Status:</b> {{message}}</h3>
       </div>
 
       <div>
         <table>
+          {% if changeDict|length > 0%}
           <tr>
             <th>Plant DUID</th>
             <th>PASA-Delta</th>
@@ -25,6 +24,7 @@
             <th>No. Changes</th>
             <th>Region</th>
           </tr>
+          {% endif %}
           {% for key in changeDict: %}
           <tr>
             <td>{{key}}</td>
@@ -39,25 +39,26 @@
 
         <h3>
         <form method="post" action="/{{period}}">
-          <p>
             <input type="submit" value="Download" name="action_dl">
-          </p>
         </form>
         </h3>
-
-        <p><b>Projection of system availability Difference</b>
-          <br>
+<div class="column left">&nbsp</div>
+<div class ="column middle">
+        <p>
+          <b>Projection of system availability Difference</b><br>
         </p>
         <ul>
           <li>PASA-Delta retrieves data files from <a href='http://nemweb.com.au/Reports/Current/MTPASA_DUIDAvailability/'>NEMweb</a> for the Medium Term PASA by generator plant DUID. </li>
-          <li>It compares the latest file with the file from the previous period and summarises the changes (PASA-Delta). Postive numbers are an increase in available MW and negative a decrease in available MW</li>
-          <li>The first change for each generator plant (max 10) is listed below, or if there are no changes, 'No changes' is the status</li>
+          <li>It compares the latest file with the file from the previous period and summarises the changes (PASA-Delta).</li>
+          <li>Postive numbers are an increase in available MW capcity and negative a decrease in available MW capacity</li>
+          <li>The first change for each generator plant is listed below (max 10) along with the first date of change, and no of changes.</li> 
+          <li>The status is no changes if there are None</li>
           <li>A csv containing the dates and changes can be downloaded using the download button</li>
-          <li>By using the endpoint '/[x]', PASA-Delta can look back 'x' periods. Note that MT PASA is published at 9AM, 12PM, 3PM, 6PM on Mon-Sat. No PASA update is published on Sun. This should be considered when setting the lookback period. </ul>
-            
-      </div>
-      <div class="column"></div>
-    </div>
+          <li>By using the endpoint '/[x]', PASA-Delta can look back 'x' periods. </li>
+          <li> Note that MT PASA is published at 9AM, 12PM, 3PM, 6PM on Mon-Sat. No PASA update is published on Sun. This should be considered when setting the lookback period. </li>
+        </ul>
+</div>
+<div class="column right">&nbsp</div>
   </body>
 
 </html>
