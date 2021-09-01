@@ -128,7 +128,7 @@ def get_nem_pasa(lookback=1):
 
     app.config['CHANGES'] = df_first[:10].to_dict('index')#['PASADELTA'] # pass a dictionary of changes to the index page for sorting
 
-    app.config['STATUSCOLOUR'] = "lightgreen"
+    app.config['STATUSCOLOUR'] = "#05B59E"
 
     app.config['CHANGECOUNT'] = df.groupby('DUID').count()[['PASADELTA']].to_dict() #df_counts
 
