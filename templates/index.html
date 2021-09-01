@@ -16,6 +16,7 @@
         <h3><b>Status:</b> {{message}}</h3>
       </div>
 
+      <div>
         <table>
           <tr>
             <th>Plant DUID</th>
@@ -34,6 +35,7 @@
           </tr> 
           {% endfor %} 
         </table>
+      </div>
 
         <h3>
         <form method="post" action="/{{period}}">
@@ -43,7 +45,6 @@
         </form>
         </h3>
 
-      <div>
         <p><b>Projection of system availability Difference</b>
           <br>
         </p>
@@ -53,7 +54,7 @@
           <li>The first change for each generator plant (max 10) is listed below, or if there are no changes, 'No changes' is the status</li>
           <li>A csv containing the dates and changes can be downloaded using the download button</li>
           <li>By using the endpoint '/[x]', PASA-Delta can look back 'x' periods. Note that MT PASA is published at 9AM, 12PM, 3PM, 6PM on Mon-Sat. No PASA update is published on Sun. This should be considered when setting the lookback period. </ul>
-        </div>
+            
       </div>
       <div class="column"></div>
     </div>
