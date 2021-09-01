@@ -9,7 +9,39 @@
     <div class="row">
       <div class="column"></div>
       <div class="column">
+
         <h1>PASA-Delta</h1>
+
+      <div style="background-color: {{statuscolour}}">
+        <h3><b>Status:</b> {{message}}</h3>
+      </div>
+
+        <table>
+          <tr>
+            <th>Plant DUID</th>
+            <th>PASA-Delta</th>
+            <th>Day</th>
+            <th>Region</th>
+          </tr>
+          {% for key in changeDict: %}
+          <tr>
+            <td>{{key}}</td>
+            <td>{{changeDict[key]['PASADELTA']}}</td>
+            <td>{{changeDict[key]['DAY']}}</td>
+            <td>{{changeDict[key]['REGIONID']}}</td>
+          </tr> 
+          {% endfor %} 
+        </table>
+
+        <h3>
+        <form method="post" action="/{{period}}">
+          <p>
+            <input type="submit" value="Download" name="action_dl">
+          </p>
+        </form>
+        </h3>
+
+      <div>
         <p><b>Projection of system availability Difference</b>
           <br>
         </p>
@@ -19,25 +51,7 @@
           <li>The first change for each generator plant (max 10) is listed below, or if there are no changes, 'No changes' is the status</li>
           <li>A csv containing the dates and changes can be downloaded using the download button</li>
           <li>By using the endpoint '/[x]', PASA-Delta can look back 'x' periods. Note that MT PASA is published at 9AM, 12PM, 3PM, 6PM on Mon-Sat. No PASA update is published on Sun. This should be considered when setting the lookback period. </ul>
-        <p><b>Status:</b> {{message}}</p>
-
-        <table>
-          <tr>
-            <th>Plant DUID</th>
-            <th>PASA-Delta</th>
-          </tr>
-          {% for key in changeDict: %}
-          <tr>
-            <td>{{key}}</td>
-            <td>{{changeDict[key]}}</td>
-          </tr> 
-          {% endfor %} 
-        </table>
-        <form method="post" action="/{{period}}">
-          <p>
-            <input type="submit" value="Download" name="action_dl">
-          </p>
-        </form>
+        </div>
       </div>
       <div class="column"></div>
     </div>

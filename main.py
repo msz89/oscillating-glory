@@ -17,6 +17,7 @@ fname = "MT PASA Changes - crosstab.csv"
 app.config['DL_FNAME'] = fname
 app.config['MESSAGE'] = ""
 app.config['CHANGES'] = dict()
+app.config['STATUSCOLOUR'] = "lightgrey"
 
 # Root URL
 @app.route('/', methods=['GET','POST'])
@@ -39,7 +40,8 @@ def index(lookback=1):
         # status = status
         message = app.config['MESSAGE'],
         changeDict = app.config['CHANGES'],
-        period = lookback
+        period = lookback,
+        statuscolour = app.config['STATUSCOLOUR']
         )
 
 
@@ -63,6 +65,9 @@ def get_nem_pasa(lookback=1):
     url2 = base_url + link_list[-1]
 
     # load files into DF
+
+#!!!!d type={'user_id': int} dont guess date-time like a chump!
+
     df1 = pd.read_csv(url1)
     df1.rename(columns=df1.iloc[0],inplace=True) #set header row
     df1 = df1[df1.index != 'I']
@@ -103,10 +108,13 @@ def get_nem_pasa(lookback=1):
         """.format(first_date, second_date)
         )
         app.config['CHANGES'] = ""
+        app.config['STATUSCOLOUR']="lightgrey"
         return app.config['MESSAGE']
   
     # Set up df views and handle dynamic data, message and changes
-    df_first = df.groupby('DUID').first().sort_values('ABSPASADELTA',ascending=False)[['PASADELTA']] # look for the first entry for each
+    df_first = df.groupby('DUID').first().sort_values('ABSPASADELTA',ascending=False)#[['PASADELTA']] # look for the first entry for each
+    df_first['DAY'] = pd.to_datetime(df_first.DAY).dt.strftime('%d/%m/%Y')
+
     plant_change_list = list(df.DUID.unique())
     app.config['MESSAGE'] = Markup(
         """Availability has changed. <br>
@@ -116,7 +124,9 @@ def get_nem_pasa(lookback=1):
         """.format(first_date, second_date, len(plant_change_list))
         )
 
-    app.config['CHANGES'] = df_first[:10].to_dict()['PASADELTA'] # pass a dictionary of changes to the index page for sorting
+    app.config['CHANGES'] = df_first[:10].to_dict('index')#['PASADELTA'] # pass a dictionary of changes to the index page for sorting
+
+    app.config['STATUSCOLOUR'] = "lightgreen"
 
     dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
 
