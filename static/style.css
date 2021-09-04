@@ -82,3 +82,7 @@ form {
 	width: 60%;
   padding-left: 0px;
 }
+
+.tableleft {
+  text-align: left;
+}

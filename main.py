@@ -1,6 +1,7 @@
-import os
+# import os
 import pandas as pd
 import requests
+import datetime
 from flask import Flask, Markup, render_template, url_for, redirect, make_response, send_from_directory, request
 from bs4 import BeautifulSoup
 
@@ -56,7 +57,9 @@ def get_nem_pasa(lookback=1):
     # Set URL inputs
     base_url = 'https://nemweb.com.au'
     nem_url = 'https://nemweb.com.au/Reports/Current/MTPASA_DUIDAvailability/'
-    datelimit = '2025/12/31' #user adjustable
+    date_today = datetime.date.today()
+    datelimit = str(datetime.date(date_today.year+5,date_today.month,date_today.day))
+
     lookback = int(lookback)+1
 
     # fetch and form list of files to download
@@ -101,7 +104,11 @@ def get_nem_pasa(lookback=1):
     df['ABSPASADELTA'] = abs(df.PASADELTA)
     df = df[df.PASADELTA !=0] # drop rows with no change
     df = df[df.DAY<datelimit] # only take the next year, pivot the table to get columns for DUID, fillna()
-  
+
+    #Import the STATION Names // DUID to match
+    DUID = pd.read_csv("NEM_DUID_LOOKUP.csv") 
+    df = df.merge(DUID,how='left')
+
     # If no changes return a shorter message and exit function
     if len(df.index) == 0:
         app.config['MESSAGE'] = Markup(
@@ -114,7 +121,7 @@ def get_nem_pasa(lookback=1):
         return app.config['MESSAGE']
   
     # Set up df views and handle dynamic data, message and changes
-    df_first = df.groupby('DUID').first().sort_values('ABSPASADELTA',ascending=False)#[['PASADELTA']] # look for the first entry for each
+    df_first = df.groupby('STATION').first().sort_values('ABSPASADELTA',ascending=False)#[['PASADELTA']] # look for the first entry for each
     df_first['DAY'] = pd.to_datetime(df_first.DAY).dt.strftime('%d/%m/%Y')
 
     plant_change_list = list(df.DUID.unique())
@@ -130,12 +137,11 @@ def get_nem_pasa(lookback=1):
 
     app.config['STATUSCOLOUR'] = "#05B59E"
 
-    app.config['CHANGECOUNT'] = df.groupby('DUID').count()[['PASADELTA']].to_dict() #df_counts
+    app.config['CHANGECOUNT'] = df.groupby('STATION').count()[['PASADELTA']].to_dict() #df_counts
 
-
-    dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
 
     # SERVE CSV AS DOWNLOAD
+    dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
     resp = make_response(dfx.to_csv())
     resp.headers["Content-Disposition"] = "attachment; filename=PASADELTA.csv"
     resp.headers["Content-Type"] = "text/csv"
