@@ -121,7 +121,7 @@ def get_nem_pasa(lookback=1):
         return app.config['MESSAGE']
   
     # Set up df views and handle dynamic data, message and changes
-    df_first = df.groupby('STATION').first().sort_values('ABSPASADELTA',ascending=False)#[['PASADELTA']] # look for the first entry for each
+    df_first = df.groupby('DUID').first().sort_values('ABSPASADELTA',ascending=False)#[['PASADELTA']] # look for the first entry for each
     df_first['DAY'] = pd.to_datetime(df_first.DAY).dt.strftime('%d/%m/%Y')
 
     plant_change_list = list(df.DUID.unique())
@@ -137,7 +137,7 @@ def get_nem_pasa(lookback=1):
 
     app.config['STATUSCOLOUR'] = "#05B59E"
 
-    app.config['CHANGECOUNT'] = df.groupby('STATION').count()[['PASADELTA']].to_dict() #df_counts
+    app.config['CHANGECOUNT'] = df.groupby('DUID').count()[['PASADELTA']].to_dict() #df_counts
 
 
     # SERVE CSV AS DOWNLOAD
