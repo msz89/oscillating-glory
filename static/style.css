@@ -86,3 +86,17 @@ form {
 .tableleft {
   text-align: left;
 }
+
+.btn {
+  border: 1px solid black;
+  background-color: inherit;
+  padding: 14px 28px;
+  font-size: 16px;
+  color: purple;
+  /* cursor: pointer; */
+  display: inline-block;
+}
+
+.btn:hover {
+  background-color: purple;
+  color: white;

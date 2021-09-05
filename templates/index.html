@@ -39,11 +39,15 @@
         </table>
       </div>
 
+      {% if changeDict|length > 0%}
+      <!-- Should this be a link or down-arrow icon rather than a button? -->
         <h3>
         <form method="post" action="/{{period}}">
-            <input type="submit" value="Download" name="action_dl">
+            <input class='btn' type="submit" value="Download" name="action_dl">
         </form>
         </h3>
+      {% endif %}
+
 <div class="column left">&nbsp</div>
 <div class ="column middle">
         <p>
