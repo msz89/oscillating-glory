@@ -1,4 +1,5 @@
 import datetime
+from bs4.builder import TreeBuilder
 import pandas as pd
 import requests
 from flask import Flask, Markup, make_response, render_template, request
@@ -44,7 +45,6 @@ def index(lookback=1):
 @app.route("/mtpasa/")
 @app.route("/mtpasa/<int:lookback>")
 def get_nem_pasa(lookback=1):
-    # function could return (True/False, message, dict)
 
     # Set URL inputs
     base_url = 'https://nemweb.com.au'
@@ -77,15 +77,15 @@ def get_nem_pasa(lookback=1):
 
     # get dates for labelling
     first_date = df1.PUBLISH_DATETIME[0]
-    second_date= df2.PUBLISH_DATETIME[0]
+    second_date = df2.PUBLISH_DATETIME[0]
 
     # join the tables on day,region and DUID and convert to numeric
     df = pd.merge(df1[['DAY','REGIONID','DUID','PASAAVAILABILITY']],
                   df2[['DAY','REGIONID','DUID','PASAAVAILABILITY']],
-                  how='left',
+                  how='outer',
                   on=['DAY','REGIONID','DUID'], 
                   suffixes=[None,'_2']) 
-
+    df.fillna(value=0, inplace=True)
     df.PASAAVAILABILITY = pd.to_numeric(df.PASAAVAILABILITY) # convert to numeric
     df.PASAAVAILABILITY_2 = pd.to_numeric(df.PASAAVAILABILITY_2) # convert to numeric
 
