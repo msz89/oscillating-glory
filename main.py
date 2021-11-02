@@ -65,13 +65,15 @@ def get_nem_pasa(lookback=1):
 
 #!!!!d type={'user_id': int} dont guess date-time like a chump!
 
-    df1 = pd.read_csv(url1)
+    df1 = pd.read_csv(url1, index_col=False)
     df1.rename(columns=df1.iloc[0],inplace=True) #set header row
+    df1.set_index(keys="I",inplace=True)
     df1 = df1[df1.index != 'I']
     df1 = df1[df1.index != 'C']
 
-    df2 = pd.read_csv(url2)
+    df2 = pd.read_csv(url2, index_col=False)
     df2.rename(columns=df2.iloc[0],inplace=True) #set header row
+    df2.set_index(keys="I",inplace=True)
     df2 = df2[df2.index != 'I']
     df2 = df2[df2.index != 'C']
 
