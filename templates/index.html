@@ -1,64 +1,63 @@
 <!doctype html>
 <html>
+  <head>
+    <title>MT PASA Comparison</title>
+    <link rel="stylesheet" href="static/style.css">
+  <body>
+    <div>
+      <h1>PASA-Delta <img class="logo" src="static/BEN-purple-green.png" style="height:60px;"></h1>
+    </div>
 
-<head>
-  <title>MT PASA Comparison</title>
-  <link rel="stylesheet" href="static/style.css">
+    <div class="status" style="background-color: {{statuscolour}}">
+      <h3><b>Status:</b> {{message}}</h3>
+    </div>
 
-  <body>    
-      <div>
-        <h1>PASA-Delta <img class="logo" src="static/BEN-purple-green.png" style="height:60px;"> </h1>
+    <div>
+      <table> {% if changeDict|length > 0%} <tr>
+          <th class="tableleft">DUID</th>
+          <th>Station Name</th>
+          <th>PASA-Delta</th>
+          <th>Day</th>
+          <th>No. Changes</th>
+          <th>Region</th>
+        </tr> {% endif %} {% for key in changeDict: %} <tr>
+          <td class="tableleft">{{key}}</td>
+          <td>{{changeDict[key]['STATION']}}</td>
+          <td>{{changeDict[key]['PASADELTA']}}</td>
+          <td>{{changeDict[key]['DAY']}}</td>
+          <td>{{changeCount['PASADELTA'][key]}}</td>
+          <td>{{changeDict[key]['REGIONID']}}</td>
+        </tr> {% endfor %} </table>
+    </div> 
+
+    {% if changeDict|length > 0%}<!-- Should this be a link or down-arrow icon rather than a button? -->
+    <h3>
+      <form method="post" action="/{{period}}">
+        <input class='btn' type="submit" value="Download" name="action_dl">
+      </form>
+    </h3> 
+    {% endif %}
+
+    <button type="button" class="collapsible">How does the MTPASA app work?</button>
+    <div class="content">
+        <div class="column left">&nbsp</div>
+        <div class="column middle">
+          <p>Medium Term Projection of System Availability</p>
+          <ul>
+            <li>PASA-Delta retrieves data files from <a href='http://nemweb.com.au/Reports/Current/MTPASA_DUIDAvailability/'>NEMweb</a> for the Medium Term PASA by generator plant DUID. </li>
+            <li>It compares the latest file with the file from the previous period and summarises the changes (PASA-Delta).</li>
+            <li>Postive numbers are an increase in available MW capcity and negative a decrease in available MW capacity</li>
+            <li>The first change for each generator plant is listed below (max 10) along with the first date of change, and no of changes.</li>
+            <li>The status is no changes if there are None</li>
+            <li>A csv containing the dates and changes can be downloaded using the download button</li>
+            <li>By using the endpoint '/[x]', PASA-Delta can look back 'x' periods. </li>
+            <li> Note that MT PASA is published at 9AM, 12PM, 3PM, 6PM on Mon-Sat. No PASA update is published on Sun. This should be considered when setting the lookback period. </li>
+          </ul>
+        </div>
+        <div class="column right">&nbsp</div>
       </div>
 
-      <div class="status" style="background-color: {{statuscolour}}">
-        <h3><b>Status:</b> {{message}}</h3>
-      </div>
-
-      <div>
-        <table>
-          {% if changeDict|length > 0%}
-          <tr>
-            <th>Plant DUID</th>
-            <th>PASA-Delta</th>
-            <th>Day</th>
-            <th>No. Changes</th>
-            <th>Region</th>
-          </tr>
-          {% endif %}
-          {% for key in changeDict: %}
-          <tr>
-            <td>{{key}}</td>
-            <td>{{changeDict[key]['PASADELTA']}}</td>
-            <td>{{changeDict[key]['DAY']}}</td>
-            <td>{{changeCount['PASADELTA'][key]}}</td>
-            <td>{{changeDict[key]['REGIONID']}}</td>
-          </tr> 
-          {% endfor %} 
-        </table>
-      </div>
-
-        <h3>
-        <form method="post" action="/{{period}}">
-            <input type="submit" value="Download" name="action_dl">
-        </form>
-        </h3>
-<div class="column left">&nbsp</div>
-<div class ="column middle">
-        <p>
-          <b>Projection of system availability Difference</b><br>
-        </p>
-        <ul>
-          <li>PASA-Delta retrieves data files from <a href='http://nemweb.com.au/Reports/Current/MTPASA_DUIDAvailability/'>NEMweb</a> for the Medium Term PASA by generator plant DUID. </li>
-          <li>It compares the latest file with the file from the previous period and summarises the changes (PASA-Delta).</li>
-          <li>Postive numbers are an increase in available MW capcity and negative a decrease in available MW capacity</li>
-          <li>The first change for each generator plant is listed below (max 10) along with the first date of change, and no of changes.</li> 
-          <li>The status is no changes if there are None</li>
-          <li>A csv containing the dates and changes can be downloaded using the download button</li>
-          <li>By using the endpoint '/[x]', PASA-Delta can look back 'x' periods. </li>
-          <li> Note that MT PASA is published at 9AM, 12PM, 3PM, 6PM on Mon-Sat. No PASA update is published on Sun. This should be considered when setting the lookback period. </li>
-        </ul>
-</div>
-<div class="column right">&nbsp</div>
+    <script src="static/script.js"></script>
+  </div>
   </body>
-
 </html>

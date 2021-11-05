@@ -1,24 +1,20 @@
-import os
+import datetime
+from bs4.builder import TreeBuilder
 import pandas as pd
 import requests
-from flask import Flask, Markup, render_template, url_for, redirect, make_response, send_from_directory, request
+from flask import Flask, Markup, make_response, render_template, request
 from bs4 import BeautifulSoup
 
 app = Flask(__name__, template_folder="templates")
 
 # Enable debugging mode
 app.config["DEBUG"] = True
-
 # Load paths etc into app dict and initialise global variables
 UPLOAD_FOLDER = 'static/files'
 app.config['UPLOAD_FOLDER'] =  UPLOAD_FOLDER
-
-fname = "MT PASA Changes - crosstab.csv"
-app.config['DL_FNAME'] = fname
-app.config['MESSAGE'] = ""
-app.config['CHANGES'] = dict()
 app.config['CHANGECOUNT'] = dict()
 app.config['STATUSCOLOUR'] = "lightgrey"
+
 
 # Root URL
 @app.route('/', methods=['GET','POST'])
@@ -27,20 +23,18 @@ def index(lookback=1):
     # fetches the formed response from get nem pasa
     # period = request.args.get('period') # better way to use params rather than endpoint
 
-    resp = get_nem_pasa(lookback)
+    flag,message,changes,resp = get_nem_pasa(lookback)
 
     # button logic - updated variables dont seem to get into this!
     if request.method == 'POST':
         return resp
 
-        # return resp
-
     # render main page and pass dynamic data through
     return render_template(
         'index.html',
         # status = status
-        message = app.config['MESSAGE'],
-        changeDict = app.config['CHANGES'],
+        message = message,
+        changeDict = changes,
         changeCount = app.config['CHANGECOUNT'],
         period = lookback,
         statuscolour = app.config['STATUSCOLOUR']
@@ -51,12 +45,13 @@ def index(lookback=1):
 @app.route("/mtpasa/")
 @app.route("/mtpasa/<int:lookback>")
 def get_nem_pasa(lookback=1):
-    # function could return (True/False, message, dict)
 
     # Set URL inputs
     base_url = 'https://nemweb.com.au'
     nem_url = 'https://nemweb.com.au/Reports/Current/MTPASA_DUIDAvailability/'
-    datelimit = '2025/12/31' #user adjustable
+    date_today = datetime.date.today()
+    datelimit = str(datetime.date(date_today.year+5,date_today.month,date_today.day))
+
     lookback = int(lookback)+1
 
     # fetch and form list of files to download
@@ -82,15 +77,15 @@ def get_nem_pasa(lookback=1):
 
     # get dates for labelling
     first_date = df1.PUBLISH_DATETIME[0]
-    second_date= df2.PUBLISH_DATETIME[0]
+    second_date = df2.PUBLISH_DATETIME[0]
 
     # join the tables on day,region and DUID and convert to numeric
     df = pd.merge(df1[['DAY','REGIONID','DUID','PASAAVAILABILITY']],
                   df2[['DAY','REGIONID','DUID','PASAAVAILABILITY']],
-                  how='left',
+                  how='outer',
                   on=['DAY','REGIONID','DUID'], 
                   suffixes=[None,'_2']) 
-
+    df.fillna(value=0, inplace=True)
     df.PASAAVAILABILITY = pd.to_numeric(df.PASAAVAILABILITY) # convert to numeric
     df.PASAAVAILABILITY_2 = pd.to_numeric(df.PASAAVAILABILITY_2) # convert to numeric
 
@@ -101,24 +96,33 @@ def get_nem_pasa(lookback=1):
     df['ABSPASADELTA'] = abs(df.PASADELTA)
     df = df[df.PASADELTA !=0] # drop rows with no change
     df = df[df.DAY<datelimit] # only take the next year, pivot the table to get columns for DUID, fillna()
-  
+
+    #Import the STATION Names // DUID to match
+    DUID = pd.read_csv("NEM_DUID_LOOKUP.csv") 
+    df = df.merge(DUID,how='left')
+
     # If no changes return a shorter message and exit function
     if len(df.index) == 0:
-        app.config['MESSAGE'] = Markup(
+        #build up the tuple of flag, message and changes (bool, str, dict)
+        flag = False
+        message = Markup(
         """No changes. <br>
         When comparing the MT PASA submitted on {} with {}, <br>
         """.format(first_date, second_date)
         )
-        app.config['CHANGES'] = ""
+        changes = ""
+        resp=""
         app.config['STATUSCOLOUR']="lightgrey"
-        return app.config['MESSAGE']
+        return (flag, message, changes, resp)
   
     # Set up df views and handle dynamic data, message and changes
     df_first = df.groupby('DUID').first().sort_values('ABSPASADELTA',ascending=False)#[['PASADELTA']] # look for the first entry for each
     df_first['DAY'] = pd.to_datetime(df_first.DAY).dt.strftime('%d/%m/%Y')
 
     plant_change_list = list(df.DUID.unique())
-    app.config['MESSAGE'] = Markup(
+    #build up the tuple of flag, message and changes (bool, str, dict)
+    flag = True
+    message = Markup(
         """Availability has changed. <br>
         When comparing the MT PASA submitted on {} with {}, <br>
         There were {} plants that updated their availability.<br>
@@ -126,20 +130,18 @@ def get_nem_pasa(lookback=1):
         """.format(first_date, second_date, len(plant_change_list))
         )
 
-    app.config['CHANGES'] = df_first[:10].to_dict('index')#['PASADELTA'] # pass a dictionary of changes to the index page for sorting
+    changes = df_first[:10].to_dict('index')#['PASADELTA'] # pass a dictionary of changes to the index page for sorting
 
     app.config['STATUSCOLOUR'] = "#05B59E"
-
     app.config['CHANGECOUNT'] = df.groupby('DUID').count()[['PASADELTA']].to_dict() #df_counts
 
 
-    dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
-
     # SERVE CSV AS DOWNLOAD
+    dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
     resp = make_response(dfx.to_csv())
     resp.headers["Content-Disposition"] = "attachment; filename=PASADELTA.csv"
     resp.headers["Content-Type"] = "text/csv"
-    return resp
+    return (flag, message, changes, resp)
 
 if (__name__ == "__main__"):
     app.run(port = 5000)
