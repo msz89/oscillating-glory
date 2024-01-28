@@ -65,35 +65,39 @@ def get_nem_pasa(lookback=1):
 
 #!!!!d type={'user_id': int} dont guess date-time like a chump!
 
-    df1 = pd.read_csv(url1)
+    df1 = pd.read_csv(url1, index_col=False)
     df1.rename(columns=df1.iloc[0],inplace=True) #set header row
+    df1.set_index(keys="I",inplace=True)
     df1 = df1[df1.index != 'I']
     df1 = df1[df1.index != 'C']
 
-    df2 = pd.read_csv(url2)
+    df2 = pd.read_csv(url2, index_col=False)
     df2.rename(columns=df2.iloc[0],inplace=True) #set header row
+    df2.set_index(keys="I",inplace=True)
     df2 = df2[df2.index != 'I']
     df2 = df2[df2.index != 'C']
 
     # get dates for labelling
     first_date = df1.PUBLISH_DATETIME[0]
     second_date = df2.PUBLISH_DATETIME[0]
-
+    
+ 
     # join the tables on day,region and DUID and convert to numeric
     df = pd.merge(df1[['DAY','REGIONID','DUID','PASAAVAILABILITY']],
                   df2[['DAY','REGIONID','DUID','PASAAVAILABILITY']],
                   how='outer',
                   on=['DAY','REGIONID','DUID'], 
-                  suffixes=[None,'_2']) 
+                  suffixes=[None,'_2'])
     df.fillna(value=0, inplace=True)
-    df.PASAAVAILABILITY = pd.to_numeric(df.PASAAVAILABILITY) # convert to numeric
-    df.PASAAVAILABILITY_2 = pd.to_numeric(df.PASAAVAILABILITY_2) # convert to numeric
+    df["PASAAVAILABILITY"] = pd.to_numeric(df["PASAAVAILABILITY"]) # convert to numeric
+    df["PASAAVAILABILITY_2"] = pd.to_numeric(df["PASAAVAILABILITY_2"]) # convert to numeric
 
     # Create pasadelta as second date minus first date
     # negative numbers are a decrease in availability
     # positive numbers are an increase in availability
     df['PASADELTA'] = df.PASAAVAILABILITY_2 - df.PASAAVAILABILITY # create pasadelta
     df['ABSPASADELTA'] = abs(df.PASADELTA)
+
     df = df[df.PASADELTA !=0] # drop rows with no change
     df = df[df.DAY<datelimit] # only take the next year, pivot the table to get columns for DUID, fillna()
 
@@ -134,7 +138,6 @@ def get_nem_pasa(lookback=1):
 
     app.config['STATUSCOLOUR'] = "#05B59E"
     app.config['CHANGECOUNT'] = df.groupby('DUID').count()[['PASADELTA']].to_dict() #df_counts
-
 
     # SERVE CSV AS DOWNLOAD
     dfx = df[['DAY','DUID','PASADELTA']].pivot(index='DAY', columns='DUID',values='PASADELTA').fillna(0)
